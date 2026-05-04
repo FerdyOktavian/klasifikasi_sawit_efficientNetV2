@@ -2,6 +2,8 @@ import os
 import tempfile
 import streamlit as st
 from PIL import Image
+import io
+import html
 
 from predict import load_sawit_model, predict_image
 
@@ -15,7 +17,7 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Lato:wght@300;400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Lato:wght@300;400;700;900&display=swap');
 
 :root {
     --cream:   #F7F4EE;
@@ -32,9 +34,15 @@ st.markdown("""
     --border:  #D8D3C8;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+}
 
-html { scroll-behavior: smooth; }
+html { 
+    scroll-behavior: smooth; 
+}
 
 .stApp {
     background: var(--cream);
@@ -42,9 +50,13 @@ html { scroll-behavior: smooth; }
     font-family: 'Lato', sans-serif;
 }
 
-/* ─── Hide default streamlit chrome ─── */
-#MainMenu, footer, header { visibility: hidden; }
-section[data-testid="stSidebar"] { display: none; }
+#MainMenu, footer, header { 
+    visibility: hidden; 
+}
+
+section[data-testid="stSidebar"] { 
+    display: none; 
+}
 
 .main .block-container {
     padding: 0 !important;
@@ -52,11 +64,13 @@ section[data-testid="stSidebar"] { display: none; }
 }
 
 /* ─────────────────────────────────────
-   NAVBAR  (position:fixed via JS trick)
+   NAVBAR
 ───────────────────────────────────── */
 .navbar {
     position: fixed;
-    top: 0; left: 0; right: 0;
+    top: 0; 
+    left: 0; 
+    right: 0;
     z-index: 9999;
     display: flex;
     align-items: center;
@@ -70,8 +84,8 @@ section[data-testid="stSidebar"] { display: none; }
 
 .nav-brand {
     font-family: 'Playfair Display', serif;
-    font-size: 50px;
-    font-weight: 700;
+    font-size: 46px;
+    font-weight: 900;
     color: var(--green);
     letter-spacing: -0.3px;
 }
@@ -88,8 +102,8 @@ section[data-testid="stSidebar"] { display: none; }
 
 .nav-links a {
     font-family: 'Lato', sans-serif;
-    font-size: 20px;
-    font-weight: 400;
+    font-size: 18px;
+    font-weight: 700;
     letter-spacing: 0.5px;
     color: var(--text-2) !important;
     text-decoration: none;
@@ -104,20 +118,19 @@ section[data-testid="stSidebar"] { display: none; }
     background: var(--green-light) !important;
     color: #fff !important;
     padding: 10px 24px !important;
-    border-radius: 6px !important;
-    font-weight: 700 !important;
+    border-radius: 8px !important;
+    font-weight: 900 !important;
     font-size: 16px !important;
     letter-spacing: 0.4px !important;
 }
 
 .nav-cta:hover {
-    background: var(--green-light) !important;
+    background: var(--green) !important;
     color: #fff !important;
 }
 
-/* Spacer so content doesn't hide behind fixed navbar */
 .navbar-spacer {
-    height: 50px;
+    height: 72px;
 }
 
 /* ─────────────────────────────────────
@@ -138,14 +151,14 @@ section[data-testid="stSidebar"] { display: none; }
     align-items: center;
     gap: 16px;
     font-size: 18px;
-    font-weight: 700;
+    font-weight: 900;
     letter-spacing: 2.5px;
     text-transform: uppercase;
     color: var(--green);
     background: var(--green-pale);
     border: 1px solid #C3D9CA;
-    border-radius: 4px;
-    padding: 7px 16px;
+    border-radius: 6px;
+    padding: 8px 18px;
     margin-bottom: 32px;
 }
 
@@ -155,7 +168,7 @@ section[data-testid="stSidebar"] { display: none; }
     font-weight: 900;
     line-height: 1.1;
     color: var(--text);
-    letter-spacing: 3.5px;
+    letter-spacing: 1px;
     margin-bottom: 28px;
 }
 
@@ -166,11 +179,11 @@ section[data-testid="stSidebar"] { display: none; }
 
 .hero-body {
     font-size: 22px;
-    font-weight: 300;
+    font-weight: 700;
     line-height: 1.85;
     color: var(--text-2);
     margin-bottom: 48px;
-    max-width: 480px;
+    max-width: 540px;
 }
 
 .hero-stats {
@@ -180,20 +193,18 @@ section[data-testid="stSidebar"] { display: none; }
     border-top: 1px solid var(--border);
 }
 
-.stat-item {}
-
 .stat-num {
     font-family: 'Playfair Display', serif;
     font-size: 50px;
-    font-weight: 700;
+    font-weight: 900;
     color: var(--green);
     line-height: 1;
     margin-bottom: 6px;
 }
 
 .stat-lbl {
-    font-size: 20px;
-    font-weight: 400;
+    font-size: 18px;
+    font-weight: 700;
     color: var(--text-3);
     letter-spacing: 0.5px;
 }
@@ -207,19 +218,19 @@ section[data-testid="stSidebar"] { display: none; }
 .hero-card {
     background: #fff;
     border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 28px 32px;
+    border-radius: 18px;
+    padding: 30px 34px;
     display: flex;
     align-items: flex-start;
     gap: 20px;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.04);
+    box-shadow: 0 4px 18px rgba(0,0,0,0.05);
 }
 
 .hero-card-dot {
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    margin-top: 4px;
+    margin-top: 6px;
     flex-shrink: 0;
 }
 
@@ -230,20 +241,20 @@ section[data-testid="stSidebar"] { display: none; }
 .hero-card-title {
     font-family: 'Playfair Display', serif;
     font-size: 30px;
-    font-weight: 700;
+    font-weight: 900;
     color: var(--text);
     margin-bottom: 8px;
 }
 
 .hero-card-text {
     font-size: 18px;
-    font-weight: 300;
+    font-weight: 700;
     line-height: 1.7;
     color: var(--text-2);
 }
 
 /* ─────────────────────────────────────
-   SECTION WRAPPER
+   SECTION
 ───────────────────────────────────── */
 .section {
     padding: 100px 64px;
@@ -255,8 +266,8 @@ section[data-testid="stSidebar"] { display: none; }
 }
 
 .section-eyebrow {
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 19px;
+    font-weight: 900;
     letter-spacing: 3px;
     text-transform: uppercase;
     color: var(--green);
@@ -265,8 +276,8 @@ section[data-testid="stSidebar"] { display: none; }
 
 .section-title {
     font-family: 'Playfair Display', serif;
-    font-size: 52px;
-    font-weight: 700;
+    font-size: 54px;
+    font-weight: 900;
     color: var(--text);
     letter-spacing: -1px;
     line-height: 1.1;
@@ -275,140 +286,312 @@ section[data-testid="stSidebar"] { display: none; }
 
 .section-desc {
     font-size: 22px;
-    font-weight: 450;
+    font-weight: 700;
     line-height: 1.8;
     color: var(--text-2);
-    max-width: 600px;
+    max-width: 760px;
     margin-bottom: 1px;
 }
 
 /* ─────────────────────────────────────
-   UPLOAD & RESULT
+   PREDICTION WRAPPER
 ───────────────────────────────────── */
-.upload-box {
+.prediction-wrapper {
     background: #fff;
-    border: 1.5px dashed var(--green-light);
-    border-radius: 16px;
-    padding: 32px;
-    margin-bottom: 0;
+    padding: 0 64px 80px;
+    overflow: hidden;
 }
 
-/* Streamlit file uploader overrides */
-div[data-testid="stFileUploader"] {
-    background: transparent !important;
+[data-testid="stHorizontalBlock"],
+[data-testid="column"] {
     border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* ─────────────────────────────────────
+   FILE UPLOADER FINAL CLEAN
+───────────────────────────────────── */
+div[data-testid="stFileUploader"] {
+    background: #ffffff !important;
+    border: 1.5px dashed var(--green-light) !important;
+    border-radius: 18px !important;
+    padding: 24px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+}
+
+div[data-testid="stFileUploader"] label,
+div[data-testid="stFileUploader"] label p,
+div[data-testid="stFileUploader"] label span {
+    font-family: 'Playfair Display', serif !important;
+    font-size: 22px !important;
+    font-weight: 900 !important;
+    color: var(--text) !important;
+    margin-bottom: 14px !important;
+}
+
+div[data-testid="stFileUploader"] section {
+    background: #20222c !important;
+    border: none !important;
+    border-radius: 12px !important;
+    padding: 16px !important;
+}
+
+div[data-testid="stFileUploader"] section > div {
+    border: none !important;
+    outline: none !important;
+    min-height: 0 !important;
+}
+
+div[data-testid="stFileUploader"] section p,
+div[data-testid="stFileUploader"] section span,
+div[data-testid="stFileUploader"] small {
+    color: #F7F4EE !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+}
+
+/* Tombol utama upload */
+# div[data-testid="stFileUploader"] section button:not([data-testid="stFileUploaderDeleteBtn"]) {
+#     position: relative !important;
+#     background: var(--green) !important;
+#     border: none !important;
+#     border-radius: 10px !important;
+#     padding: 12px 24px !important;
+#     min-width: 130px !important;
+#     height: 48px !important;
+#     opacity: 1 !important;
+#     color: transparent !important;
+#     font-size: 0 !important;
+#     overflow: hidden !important;
+# }
+
+/* Sembunyikan isi bawaan agar tidak double */
+div[data-testid="stFileUploader"] section button:not([data-testid="stFileUploaderDeleteBtn"]) * {
+    display: none !important;
+}
+
+# /* Tulis ulang tombol upload yang rapi */
+# div[data-testid="stFileUploader"] section button:not([data-testid="stFileUploaderDeleteBtn"])::after {
+#     content: "＋ Upload";
+#     display: inline-flex !important;
+#     align-items: center !important;
+#     justify-content: center !important;
+#     color: #ffffff !important;
+#     font-family: 'Lato', sans-serif !important;
+#     font-size: 15px !important;
+#     font-weight: 900 !important;
+#     letter-spacing: 0.2px !important;
+# }
+
+/* File yang sudah dipilih */
+div[data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] {
+    background: #20222c !important;
+    border: 1px solid rgba(255,255,255,0.10) !important;
+    border-radius: 10px !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    padding: 8px 10px !important;
+}
+
+div[data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] * {
+    color: #ffffff !important;
+    font-weight: 800 !important;
+}
+
+/* Tombol X hapus file jangan kena style upload */
+div[data-testid="stFileUploader"] [data-testid="stFileUploaderDeleteBtn"] {
+    background: var(--green) !important;
+    color: #ffffff !important;
+    border-radius: 8px !important;
+    min-width: 36px !important;
+    width: 36px !important;
+    height: 36px !important;
     padding: 0 !important;
 }
 
-div[data-testid="stFileUploader"] label {
-    font-family: 'Playfair Display', serif !important;
-    font-size: 20px !important;
-    font-weight: 700 !important;
-    color: var(--text) !important;
+div[data-testid="stFileUploader"] [data-testid="stFileUploaderDeleteBtn"] * {
+    display: initial !important;
+    color: #ffffff !important;
 }
 
-div[data-testid="stFileUploader"] small,
-div[data-testid="stFileUploader"] p {
-    font-size: 14px !important;
-    color: var(--text-3) !important;
-    font-family: 'Lato', sans-serif !important;
+/* ─────────────────────────────────────
+   CAMERA BUTTON
+───────────────────────────────────── */
+.input-divider {
+    text-align: center;
+    margin: 28px 0 24px;
+    color: var(--text-3);
+    font-size: 16px;
+    font-weight: 900;
+    letter-spacing: 2px;
 }
 
-div[data-testid="stFileUploader"] button {
+div.stButton > button {
+    width: auto !important;
+    min-width: 230px !important;
     background: var(--green) !important;
     color: #fff !important;
     border: none !important;
-    border-radius: 8px !important;
+    border-radius: 10px !important;
     font-family: 'Lato', sans-serif !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    padding: 10px 22px !important;
+    font-size: 22px !important;
+    font-weight: 900 !important;
+    padding: 18px 26px !important;
     letter-spacing: 0.3px !important;
 }
 
+div.stButton > button:hover {
+    background: var(--green-light) !important;
+    color: #fff !important;
+}
+
+div[data-testid="stCameraInput"] {
+    background: #ffffff !important;
+    border: 1.5px dashed var(--green-light) !important;
+    border-radius: 18px !important;
+    padding: 24px !important;
+    margin-top: 22px !important;
+    overflow: hidden !important;
+}
+
+div[data-testid="stCameraInput"] label {
+    font-family: 'Playfair Display', serif !important;
+    font-size: 22px !important;
+    font-weight: 900 !important;
+    color: var(--text) !important;
+}
+
+div[data-testid="stCameraInput"] button {
+    background: var(--green) !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 9px !important;
+    font-family: 'Lato', sans-serif !important;
+    font-size: 15px !important;
+    font-weight: 900 !important;
+    padding: 10px 22px !important;
+}
+
+/* ─────────────────────────────────────
+   IMAGE PREVIEW
+───────────────────────────────────── */
+.image-preview-wrap {
+    margin-top: 26px;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+img {
+    max-width: 100% !important;
+    height: auto !important;
+    border-radius: 14px !important;
+    border: 1px solid var(--border) !important;
+}
+
+/* ─────────────────────────────────────
+   RESULT PANEL
+───────────────────────────────────── */
 .result-panel {
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 40px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.05);
+    background: #fff !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 18px !important;
+    padding: 42px !important;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.05) !important;
+    overflow: hidden !important;
 }
 
 .result-badge {
-    font-size: 13px;
-    font-weight: 700;
+    font-size: 14px;
+    font-weight: 900;
     letter-spacing: 3px;
     text-transform: uppercase;
     color: var(--green);
     background: var(--green-pale);
     border: 1px solid #C3D9CA;
-    border-radius: 4px;
-    padding: 5px 12px;
+    border-radius: 6px;
+    padding: 6px 14px;
     display: inline-block;
-    margin-bottom: 20px;
+    margin-bottom: 22px;
 }
 
 .result-class-name {
     font-family: 'Playfair Display', serif;
-    font-size: 56px;
+    font-size: 58px;
     font-weight: 900;
     color: var(--text);
     letter-spacing: -1.5px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     line-height: 1;
 }
 
 .result-conf-text {
-    font-size: 20px;
-    font-weight: 300;
+    font-size: 21px;
+    font-weight: 700;
     color: var(--text-2);
-    margin-bottom: 36px;
+    margin-bottom: 32px;
 }
 
 .result-conf-text strong {
-    font-weight: 700;
+    font-weight: 900;
     color: var(--green);
-    font-size: 26px;
+    font-size: 28px;
 }
 
-.divider {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 28px 0;
+.divider,
+.result-divider {
+    border: none !important;
+    height: 1px !important;
+    background: var(--border) !important;
+    margin: 30px 0 !important;
 }
 
 .prob-section-title {
     font-family: 'Playfair Display', serif;
-    font-size: 22px;
-    font-weight: 700;
+    font-size: 25px;
+    font-weight: 900;
     color: var(--text);
-    margin-bottom: 20px;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    margin-bottom: 24px;
 }
 
 .prob-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
 }
 
 .prob-name {
     font-size: 18px;
-    font-weight: 400;
+    font-weight: 700;
     color: var(--text-2);
 }
 
 .prob-pct {
     font-family: 'Playfair Display', serif;
     font-size: 22px;
-    font-weight: 700;
+    font-weight: 900;
     color: var(--green);
 }
 
-/* Progress bar override */
+.stProgress {
+    max-width: 100% !important;
+    overflow: hidden !important;
+}
+
+.stProgress > div {
+    max-width: 100% !important;
+}
+
 .stProgress > div > div > div {
     background: var(--cream-3) !important;
-    height: 8px !important;
+    height: 9px !important;
     border-radius: 999px !important;
 }
 
@@ -418,12 +601,45 @@ div[data-testid="stFileUploader"] button {
 }
 
 .result-note {
-    font-size: 16px;
+    font-size: 17px;
+    font-weight: 700;
     color: var(--text-3);
-    line-height: 1.7;
-    margin-top: 24px;
-    padding-top: 20px;
+    line-height: 1.8;
+    margin-top: 26px;
+    padding-top: 22px;
     border-top: 1px solid var(--border);
+}
+
+/* ─────────────────────────────────────
+   EMPTY STATE
+───────────────────────────────────── */
+.empty-state {
+    background: #fff !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 18px !important;
+    padding: 72px 40px !important;
+    text-align: center !important;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.04) !important;
+}
+
+.empty-icon { 
+    font-size: 54px; 
+    margin-bottom: 20px; 
+}
+
+.empty-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 30px;
+    font-weight: 900;
+    color: var(--text);
+    margin-bottom: 12px;
+}
+
+.empty-text {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-2);
+    line-height: 1.7;
 }
 
 /* ─────────────────────────────────────
@@ -441,7 +657,7 @@ div[data-testid="stFileUploader"] button {
 
 .step-cell {
     background: #fff;
-    padding: 40px 32px;
+    padding: 42px 34px;
 }
 
 .step-num {
@@ -455,15 +671,15 @@ div[data-testid="stFileUploader"] button {
 
 .step-title {
     font-family: 'Playfair Display', serif;
-    font-size: 24px;
-    font-weight: 700;
+    font-size: 25px;
+    font-weight: 900;
     color: var(--text);
     margin-bottom: 12px;
 }
 
 .step-text {
     font-size: 18px;
-    font-weight: 300;
+    font-weight: 700;
     line-height: 1.75;
     color: var(--text-2);
 }
@@ -481,26 +697,26 @@ div[data-testid="stFileUploader"] button {
     background: var(--cream);
     border: 1px solid var(--border);
     border-radius: 16px;
-    padding: 40px 32px;
+    padding: 42px 34px;
 }
 
 .sistem-icon {
-    font-size: 34px;
+    font-size: 36px;
     margin-bottom: 20px;
     display: block;
 }
 
 .sistem-title {
     font-family: 'Playfair Display', serif;
-    font-size: 26px;
-    font-weight: 700;
+    font-size: 28px;
+    font-weight: 900;
     color: var(--text);
     margin-bottom: 12px;
 }
 
 .sistem-text {
     font-size: 18px;
-    font-weight: 300;
+    font-weight: 700;
     line-height: 1.8;
     color: var(--text-2);
 }
@@ -517,7 +733,7 @@ div[data-testid="stFileUploader"] button {
 
 .bio-body {
     font-size: 20px;
-    font-weight: 300;
+    font-weight: 700;
     line-height: 1.85;
     color: var(--text-2);
     margin-bottom: 20px;
@@ -531,14 +747,14 @@ div[data-testid="stFileUploader"] button {
 }
 
 .bio-tag {
-    font-size: 12px;
-    font-weight: 700;
+    font-size: 13px;
+    font-weight: 900;
     letter-spacing: 1.5px;
     text-transform: uppercase;
     color: var(--green);
     border: 1px solid #C3D9CA;
-    border-radius: 4px;
-    padding: 7px 16px;
+    border-radius: 6px;
+    padding: 8px 17px;
     background: var(--green-pale);
 }
 
@@ -556,8 +772,8 @@ div[data-testid="stFileUploader"] button {
 }
 
 .bio-item-label {
-    font-size: 13px;
-    font-weight: 700;
+    font-size: 14px;
+    font-weight: 900;
     letter-spacing: 2px;
     text-transform: uppercase;
     color: var(--text-3);
@@ -566,8 +782,8 @@ div[data-testid="stFileUploader"] button {
 
 .bio-item-val {
     font-family: 'Playfair Display', serif;
-    font-size: 22px;
-    font-weight: 700;
+    font-size: 24px;
+    font-weight: 900;
     color: var(--text);
 }
 
@@ -599,7 +815,7 @@ div[data-testid="stFileUploader"] button {
 
 .kontak-key {
     font-size: 15px;
-    font-weight: 700;
+    font-weight: 900;
     letter-spacing: 2px;
     text-transform: uppercase;
     color: var(--text-3);
@@ -607,7 +823,7 @@ div[data-testid="stFileUploader"] button {
 
 .kontak-val {
     font-size: 18px;
-    font-weight: 400;
+    font-weight: 700;
     color: var(--text);
 }
 
@@ -624,25 +840,19 @@ div[data-testid="stFileUploader"] button {
 
 .footer-brand {
     font-family: 'Playfair Display', serif;
-    font-size: 22px;
-    font-weight: 700;
+    font-size: 24px;
+    font-weight: 900;
     color: #fff;
 }
 
-.footer-brand span { color: rgba(255,255,255,0.55); }
+.footer-brand span { 
+    color: rgba(255,255,255,0.60); 
+}
 
 .footer-copy {
     font-size: 16px;
-    color: rgba(255,255,255,0.55);
-    font-weight: 300;
-}
-
-/* ─────────────────────────────────────
-   IMAGE
-───────────────────────────────────── */
-img {
-    border-radius: 12px !important;
-    border: 1px solid var(--border) !important;
+    color: rgba(255,255,255,0.70);
+    font-weight: 700;
 }
 
 /* ─────────────────────────────────────
@@ -655,7 +865,6 @@ img {
     color: var(--text);
 }
 
-/* Spinner */
 .stSpinner > div {
     border-top-color: var(--green) !important;
 }
@@ -664,17 +873,401 @@ img {
    RESPONSIVE
 ───────────────────────────────────── */
 @media (max-width: 900px) {
-    .navbar { padding: 0 24px; }
-    .nav-links { display: none; }
-    .hero { grid-template-columns: 1fr; padding: 80px 24px 60px; }
-    .hero-title { font-size: 40px; }
-    .section { padding: 72px 24px; }
-    .steps-grid { grid-template-columns: 1fr 1fr; }
-    .sistem-grid { grid-template-columns: 1fr; }
-    .bio-layout { grid-template-columns: 1fr; gap: 40px; }
-    .kontak-layout { grid-template-columns: 1fr; gap: 32px; }
-    .footer { flex-direction: column; gap: 12px; text-align: center; padding: 32px 24px; }
+    .navbar { 
+        padding: 0 24px; 
+        height: 72px;
+    }
+
+    .nav-brand {
+        font-size: 34px;
+    }
+
+    .nav-links { 
+        display: none; 
+    }
+
+    .navbar-spacer {
+        height: 72px;
+    }
+
+    .hero { 
+        grid-template-columns: 1fr; 
+        padding: 82px 24px 60px; 
+        gap: 42px;
+    }
+
+    .hero-title { 
+        font-size: 44px; 
+        letter-spacing: 0;
+    }
+
+    .hero-body {
+        font-size: 19px;
+    }
+
+    .hero-stats {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .section { 
+        padding: 72px 24px; 
+    }
+
+    .section-title {
+        font-size: 42px;
+    }
+
+    .section-desc {
+        font-size: 19px;
+    }
+
+    .prediction-wrapper {
+        padding: 0 24px 64px;
+    }
+
+    div.stButton > button {
+        width: 100% !important;
+        min-width: 100% !important;
+    }
+
+    div[data-testid="stCameraInput"] video {
+        width: 100% !important;
+        min-height: 70vh !important;
+        object-fit: cover !important;
+        border-radius: 12px !important;
+    }
+
+    .result-panel {
+        padding: 30px !important;
+    }
+
+    .result-class-name {
+        font-size: 42px;
+    }
+
+    .steps-grid { 
+        grid-template-columns: 1fr; 
+    }
+
+    .sistem-grid { 
+        grid-template-columns: 1fr; 
+    }
+
+    .bio-layout { 
+        grid-template-columns: 1fr; 
+        gap: 40px; 
+    }
+
+    .bio-data {
+        grid-template-columns: 1fr;
+    }
+
+    .kontak-layout { 
+        grid-template-columns: 1fr; 
+        gap: 32px; 
+    }
+
+    .kontak-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .footer { 
+        flex-direction: column; 
+        gap: 12px; 
+        text-align: center; 
+        padding: 32px 24px; 
+    }
 }
+/* =====================================================
+   FINAL UPLOAD BUTTON + SELECTED FILE CARD
+===================================================== */
+
+
+
+/* Sembunyikan isi tombol upload bawaan supaya tidak dobel */
+div[data-testid="stFileUploader"] section button:not([data-testid="stFileUploaderDeleteBtn"]) * {
+    display: none !important;
+}
+
+/* Tulis ulang tombol upload */
+div[data-testid="stFileUploader"] section button:not([data-testid="stFileUploaderDeleteBtn"])::after {
+    content: "↥ Upload";
+    color: #1A1A1A !important;
+    font-family: 'Lato', sans-serif !important;
+    font-size: 17px !important;
+    font-weight: 900 !important;
+    letter-spacing: 0.2px !important;
+}
+
+/* Card file yang sudah dipilih */
+.selected-file-card {
+    background: #20222c;
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.selected-file-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.selected-file-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: #D9B85C;
+    color: #1A1A1A;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    flex-shrink: 0;
+}
+
+.selected-file-name {
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 900;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 360px;
+}
+
+.selected-file-size {
+    color: #d7d7d7;
+    font-size: 13px;
+    font-weight: 700;
+    margin-top: 3px;
+}
+
+/* Tombol X */
+.clear-file-btn {
+    background: var(--green);
+    color: white;
+    border-radius: 25px;
+    padding: 20px 24px;
+    font-size: 18px;
+    font-weight: 900;
+    text-align: center;
+}
+
+/* Supaya tombol X Streamlit tidak terlalu lebar */
+div[data-testid="stButton"] button {
+    width: auto !important;
+}
+
+/* Tombol kamera tetap rapi */
+div.stButton > button {
+    background: var(--green) !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 10px !important;
+    font-size: 17px !important;
+    font-weight: 900 !important;
+    padding: 14px 26px !important;
+}
+/* =====================================================
+   FIX FINAL UPLOAD SELECTED CARD + RESULT BAR
+===================================================== */
+
+/* Card file setelah gambar dipilih */
+.selected-file-card {
+    background: #20222c;
+    border-radius: 14px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.selected-file-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.selected-file-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: #D9B85C;
+    color: #1A1A1A;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 900;
+    flex-shrink: 0;
+}
+
+.selected-file-name {
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 900;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 360px;
+}
+
+.selected-file-size {
+    color: #d7d7d7;
+    font-size: 13px;
+    font-weight: 700;
+    margin-top: 4px;
+}
+
+/* Tombol X untuk hapus/ganti gambar */
+button[kind="secondary"] {
+    border: none !important;
+}
+
+/* Progress bar custom di dalam card hasil */
+.custom-prob-wrap {
+    margin-top: 8px;
+    margin-bottom: 22px;
+}
+
+.custom-prob-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.custom-prob-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-2);
+}
+
+.custom-prob-pct {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--green);
+}
+
+.custom-progress-bg {
+    width: 100%;
+    height: 10px;
+    background: var(--cream-3);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.custom-progress-fill {
+    height: 100%;
+    background: var(--green);
+    border-radius: 999px;
+}
+
+/* Biar tombol X tidak melebar */
+div[data-testid="stButton"] button {
+    color: #ffffff !important;
+    width: auto !important;
+    min-width: auto !important;
+}
+/* Card file setelah gambar dipilih */
+.selected-file-area {
+    display: grid;
+    grid-template-columns: 1fr 58px;
+    gap: 12px;
+    align-items: stretch;
+}
+.selected-file-row {
+    background: #20222c;
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 66px;
+    width: 100%;
+}
+
+.selected-file-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: #D9B85C;
+    color: #1A1A1A;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+    flex-shrink: 0;
+}
+
+.selected-file-info {
+    min-width: 0;
+}
+
+.selected-file-name {
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 900;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.selected-file-size {
+    color: #d7d7d7;
+    font-size: 13px;
+    font-weight: 700;
+    margin-top: 4px;
+}
+.clear-upload-btn {
+    height: 66px;
+    width: 58px;
+    background: #2D5A3D;
+    color: #ffffff;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 900;
+}
+/* Bikin tombol Upload bawaan Streamlit kelihatan */
+div[data-testid="stFileUploader"] button {
+    background: #D9B85C !important;
+    color: #1A1A1A !important;
+    border: none !important;
+    border-radius: 10px !important;
+    font-size: 16px !important;
+    font-weight: 900 !important;
+    padding: 12px 24px !important;
+}
+
+/* Teks di dalam tombol Upload */
+div[data-testid="stFileUploader"] button p,
+div[data-testid="stFileUploader"] button span {
+    color: #1A1A1A !important;
+    font-size: 16px !important;
+    font-weight: 900 !important;
+}
+
+/* Icon di tombol Upload */
+div[data-testid="stFileUploader"] button svg {
+    color: #1A1A1A !important;
+    fill: #1A1A1A !important;
+}       
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -775,7 +1368,7 @@ st.markdown("""
 st.markdown('<div id="prediksi"></div>', unsafe_allow_html=True)
 st.markdown("""
 <div class="section section-alt">
-    <div class="section-eyebrow">Upload & Analisis</div>
+    <div class="section-eyebrow">Upload &amp; Analisis</div>
     <div class="section-title">Mulai Prediksi</div>
     <div class="section-desc">
         Upload gambar buah kelapa sawit Anda. Sistem akan secara otomatis menganalisis
@@ -786,26 +1379,99 @@ st.markdown("""
 
 with st.container():
     st.markdown('<div style="background:#fff; padding: 0 64px 80px;">', unsafe_allow_html=True)
+    if "show_camera" not in st.session_state:
+        st.session_state.show_camera = False
+
+    uploaded_file = None
+    camera_file = None
+    image_source = None
+    image_pil = None
+
+    if "input_bytes" not in st.session_state:
+        st.session_state.input_bytes = None
+
+    if "input_name" not in st.session_state:
+        st.session_state.input_name = None
+
+    if "input_source" not in st.session_state:
+        st.session_state.input_source = None
+
+    if "upload_key" not in st.session_state:
+        st.session_state.upload_key = 0
 
     left_col, right_col = st.columns([1, 1], gap="large")
 
     with left_col:
-        st.markdown('<div class="upload-box">', unsafe_allow_html=True)
-        uploaded_file = st.file_uploader(
-            "Pilih Gambar Buah Sawit",
-            type=["jpg", "jpeg", "png", "webp"],
-            help="Format yang didukung: JPG, JPEG, PNG, WEBP"
-        )
-        st.markdown('</div>', unsafe_allow_html=True)
+        if st.session_state.input_bytes is None:
+            uploaded_file = st.file_uploader(
+                "Pilih Gambar Buah Sawit",
+                type=["jpg", "jpeg", "png", "webp"],
+                help="Format yang didukung: JPG, JPEG, PNG, WEBP",
+                key=f"file_uploader_{st.session_state.upload_key}"
+            )
 
-        if uploaded_file is not None:
-            image_pil = Image.open(uploaded_file).convert("RGB")
+            if uploaded_file is not None:
+                st.session_state.input_bytes = uploaded_file.getvalue()
+                st.session_state.input_name = uploaded_file.name
+                st.session_state.input_source = "upload"
+                st.session_state.upload_key += 1
+                st.rerun()
+
+            st.markdown('<div class="input-divider">ATAU</div>', unsafe_allow_html=True)
+
+            if not st.session_state.show_camera:
+                if st.button("📷 Ambil Foto Langsung"):
+                    st.session_state.show_camera = True
+                    st.rerun()
+            else:
+                camera_file = st.camera_input("Kamera aktif - ambil foto buah sawit")
+
+                if camera_file is not None:
+                    st.session_state.input_bytes = camera_file.getvalue()
+                    st.session_state.input_name = "foto_kamera.jpg"
+                    st.session_state.input_source = "camera"
+                    st.session_state.show_camera = False
+                    st.rerun()
+
+                if st.button("Tutup Kamera"):
+                    st.session_state.show_camera = False
+                    st.rerun()
+
+        else:
+            file_size_kb = len(st.session_state.input_bytes) / 1024
+            safe_name = html.escape(st.session_state.input_name or "gambar_sawit.jpg")
+            source_label = "Foto Kamera" if st.session_state.input_source == "camera" else "File Upload"
+
+            file_col, clear_col = st.columns([0.85, 0.15], gap="small")
+
+            with file_col:
+                st.markdown(f"""
+                <div class="selected-file-row">
+                    <div class="selected-file-icon">🖼️</div>
+                    <div class="selected-file-info">
+                        <div class="selected-file-name">{safe_name}</div>
+                        <div class="selected-file-size">{source_label} • {file_size_kb:.1f} KB</div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            with clear_col:
+                if st.button("Hapus", key="clear_uploaded_image", help="Hapus gambar"):
+                    st.session_state.input_bytes = None
+                    st.session_state.input_name = None
+                    st.session_state.input_source = None
+                    st.session_state.show_camera = False
+                    st.session_state.upload_key += 1
+                    st.rerun()
+
+            image_pil = Image.open(io.BytesIO(st.session_state.input_bytes)).convert("RGB")
+
             st.markdown('<div style="margin-top: 24px;">', unsafe_allow_html=True)
-            st.image(image_pil, use_column_width=True)
+            st.image(image_pil, caption="Gambar yang dianalisis")
             st.markdown('</div>', unsafe_allow_html=True)
 
     with right_col:
-        if uploaded_file is not None:
+        if st.session_state.input_bytes is not None and image_pil is not None:
             with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp:
                 image_pil.save(tmp.name)
                 tmp_path = tmp.name
@@ -829,6 +1495,7 @@ with st.container():
                 """, unsafe_allow_html=True)
 
                 st.markdown('<div class="result-panel" style="margin-top:-1px; border-top: none; border-radius: 0 0 16px 16px; padding-top: 0;">', unsafe_allow_html=True)
+
                 for class_name, prob in probabilities.items():
                     dname = label_map.get(class_name, class_name)
                     st.markdown(f"""
@@ -851,11 +1518,13 @@ with st.container():
             except Exception as e:
                 st.error("Terjadi kesalahan saat melakukan prediksi.")
                 st.write(e)
+
             finally:
                 try:
                     os.remove(tmp_path)
                 except:
                     pass
+
         else:
             st.markdown("""
             <div class="result-panel" style="text-align:center; padding: 60px 40px;">
@@ -864,12 +1533,10 @@ with st.container():
                     Belum Ada Gambar
                 </div>
                 <div style="font-size: 15px; font-weight: 300; color: var(--text-3); line-height: 1.7;">
-                    Upload gambar buah kelapa sawit di sebelah kiri untuk memulai analisis klasifikasi.
+                    Upload gambar atau ambil foto langsung di sebelah kiri untuk memulai analisis klasifikasi.
                 </div>
             </div>
             """, unsafe_allow_html=True)
-
-    st.markdown('</div>', unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════
