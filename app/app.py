@@ -801,7 +801,7 @@ with st.container():
         if uploaded_file is not None:
             image_pil = Image.open(uploaded_file).convert("RGB")
             st.markdown('<div style="margin-top: 24px;">', unsafe_allow_html=True)
-            st.image(image_pil, use_container_width=True)
+            st.image(image_pil, use_column_width=True)
             st.markdown('</div>', unsafe_allow_html=True)
 
     with right_col:
