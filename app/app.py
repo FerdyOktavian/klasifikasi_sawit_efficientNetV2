@@ -1422,7 +1422,6 @@ with st.container():
             if not st.session_state.show_camera:
                 if st.button("📷 Ambil Foto Langsung"):
                     st.session_state.show_camera = True
-                    st.rerun()
             else:
                 camera_file = st.camera_input("Kamera aktif - ambil foto buah sawit")
 
@@ -1431,11 +1430,9 @@ with st.container():
                     st.session_state.input_name = "foto_kamera.jpg"
                     st.session_state.input_source = "camera"
                     st.session_state.show_camera = False
-                    st.rerun()
 
                 if st.button("Tutup Kamera"):
                     st.session_state.show_camera = False
-                    st.rerun()
 
         else:
             file_size_kb = len(st.session_state.input_bytes) / 1024
