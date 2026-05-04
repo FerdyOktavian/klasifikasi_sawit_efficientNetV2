@@ -1,0 +1,5 @@
+dataset_split/  = dataset yang sudah train, val, test
+notebooks/      = file Jupyter Notebook
+models/         = tempat simpan model .keras
+results/        = hasil grafik, confusion matrix, classification report
+app/            = nanti untuk Streamlit

@@ -1,0 +1,54 @@
+
+HASIL EVALUASI MODEL EFFICIENTNETV2S FINE-TUNED
+
+Model: EfficientNetV2S
+Input Size: 224x224
+Batch Size: 16
+Optimizer: Adam
+Learning Rate Stage 1: 0.0001
+Learning Rate Fine-tuning: 0.00001
+
+Stage 1:
+Test Accuracy: 0.8245
+Test Loss: 0.4595
+
+Fine-tuning:
+Test Accuracy: 0.9087
+Test Loss: 0.2320
+
+Classification Report:
+belum_masak:
+- precision: 0.87
+- recall: 0.94
+- f1-score: 0.90
+- support: 388
+
+masak:
+- precision: 0.92
+- recall: 0.80
+- f1-score: 0.86
+- support: 364
+
+terlalu_masak:
+- precision: 0.95
+- recall: 0.98
+- f1-score: 0.96
+- support: 376
+
+Overall:
+- accuracy: 0.91
+- macro avg precision: 0.91
+- macro avg recall: 0.91
+- macro avg f1-score: 0.91
+- weighted avg precision: 0.91
+- weighted avg recall: 0.91
+- weighted avg f1-score: 0.91
+
+Confusion Matrix:
+[[363, 22, 3],
+ [54, 292, 18],
+ [1, 5, 370]]
+
+Catatan:
+Model menunjukkan performa terbaik pada kelas terlalu_masak.
+Kesalahan terbesar terjadi pada kelas masak yang diprediksi sebagai belum_masak sebanyak 54 citra.
