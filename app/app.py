@@ -11,6 +11,50 @@ st.set_page_config(
     page_icon="🌴",
     layout="centered"
 )
+st.markdown("""
+<style>
+/* Lebarin area utama di HP */
+.block-container {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    max-width: 100% !important;
+}
+
+/* Besarin area kamera */
+[data-testid="stCameraInput"] {
+    width: 100% !important;
+}
+
+/* Besarin preview kamera */
+[data-testid="stCameraInput"] video {
+    width: 100% !important;
+    height: 430px !important;
+    object-fit: cover !important;
+    border-radius: 14px 14px 0 0 !important;
+}
+
+/* Setelah foto diambil */
+[data-testid="stCameraInput"] img {
+    width: 100% !important;
+    height: auto !important;
+    border-radius: 14px 14px 0 0 !important;
+}
+
+/* Tombol Take Photo */
+[data-testid="stCameraInput"] button {
+    width: 100% !important;
+    height: 52px !important;
+    font-size: 18px !important;
+}
+
+/* Khusus layar HP */
+@media (max-width: 768px) {
+    [data-testid="stCameraInput"] video {
+        height: 460px !important;
+    }
+}
+</style>
+""", unsafe_allow_html=True)
 
 st.title("🌴 Klasifikasi Kematangan Buah Kelapa Sawit")
 st.write(
