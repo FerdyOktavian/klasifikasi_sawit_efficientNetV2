@@ -29,12 +29,19 @@ st.markdown("""
     max-width: 100% !important;
 }
 
-/* Besarin area kamera */
+/* Semua tombol Streamlit dibuat lebar */
+div[data-testid="stButton"] button {
+    width: 100% !important;
+    min-height: 48px !important;
+    font-size: 16px !important;
+}
+
+/* Area kamera */
 [data-testid="stCameraInput"] {
     width: 100% !important;
 }
 
-/* Besarin preview kamera */
+/* Preview kamera */
 [data-testid="stCameraInput"] video {
     width: 100% !important;
     height: 430px !important;
@@ -49,16 +56,23 @@ st.markdown("""
     border-radius: 14px 14px 0 0 !important;
 }
 
-/* Tombol kamera bawaan Streamlit */
+/* Tombol Take Photo bawaan kamera */
 [data-testid="stCameraInput"] button {
     width: 100% !important;
     min-height: 52px !important;
     font-size: 18px !important;
 }
 
-/* File uploader agar rapi */
+/* File uploader */
 [data-testid="stFileUploader"] {
     width: 100% !important;
+}
+
+/* Gambar hasil upload/foto */
+[data-testid="stImage"] img {
+    width: 100% !important;
+    height: auto !important;
+    border-radius: 12px !important;
 }
 
 /* Khusus layar HP */
@@ -80,6 +94,16 @@ def load_model_cached():
 
 
 model = load_model_cached()
+
+
+# =========================
+# SAFE RERUN
+# =========================
+def safe_rerun():
+    try:
+        st.rerun()
+    except AttributeError:
+        st.experimental_rerun()
 
 
 # =========================
@@ -122,30 +146,26 @@ if input_mode == "Upload Gambar":
     uploaded_file = st.file_uploader(
         "Upload gambar buah kelapa sawit",
         type=["jpg", "jpeg", "png", "webp"],
-        accept_multiple_files=False,
-        width="stretch"
+        accept_multiple_files=False
     )
 
 else:
     if st.session_state.camera_open:
-        if st.button("❌ Tutup Kamera", width="stretch"):
+        if st.button("❌ Tutup Kamera"):
             st.session_state.camera_open = False
-            st.rerun()
+            safe_rerun()
 
         st.caption(
             "📱 Jika kamera depan terbuka, tekan ikon tukar kamera pada preview "
             "untuk memakai kamera belakang."
         )
 
-        camera_file = st.camera_input(
-            "Ambil foto buah kelapa sawit",
-            width="stretch"
-        )
+        camera_file = st.camera_input("Ambil foto buah kelapa sawit")
 
     else:
-        if st.button("📷 Buka Kamera", width="stretch"):
+        if st.button("📷 Buka Kamera"):
             st.session_state.camera_open = True
-            st.rerun()
+            safe_rerun()
 
         st.info("Tekan tombol **Buka Kamera** untuk mengambil foto.")
 
@@ -163,17 +183,9 @@ if image_source is not None:
         image_pil = Image.open(image_source).convert("RGB")
 
         if input_mode == "Upload Gambar":
-            st.image(
-                image_pil,
-                caption="Gambar yang diupload",
-                width="stretch"
-            )
+            st.image(image_pil, caption="Gambar yang diupload")
         else:
-            st.image(
-                image_pil,
-                caption="Foto yang diambil",
-                width="stretch"
-            )
+            st.image(image_pil, caption="Foto yang diambil")
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
             image_pil.save(temp_file.name)
@@ -207,7 +219,6 @@ if image_source is not None:
 
         for class_name, prob in probabilities.items():
             display_name = label_map.get(class_name, class_name)
-
             safe_prob = max(0, min(100, int(round(prob))))
 
             st.write(f"{display_name}: {prob:.2f}%")
