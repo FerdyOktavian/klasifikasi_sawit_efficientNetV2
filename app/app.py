@@ -11,6 +11,7 @@ st.set_page_config(
     page_icon="🌴",
     layout="centered"
 )
+
 st.markdown("""
 <style>
 /* Lebarin area utama di HP */
@@ -53,20 +54,29 @@ st.markdown("""
         height: 460px !important;
     }
 }
+
 </style>
 """, unsafe_allow_html=True)
 
+
 st.title("🌴 Klasifikasi Kematangan Buah Kelapa Sawit")
+
 st.write(
     "Aplikasi ini menggunakan model EfficientNetV2S untuk mengklasifikasikan "
     "tingkat kematangan buah kelapa sawit berdasarkan citra gambar."
 )
 
+
 @st.cache_resource
 def load_model_cached():
     return load_sawit_model()
 
+
 model = load_model_cached()
+
+if "camera_open" not in st.session_state:
+    st.session_state.camera_open = False
+
 input_mode = st.radio(
     "Pilih metode input gambar:",
     ["Upload Gambar", "Ambil Foto"],
@@ -82,47 +92,70 @@ if input_mode == "Upload Gambar":
         type=["jpg", "jpeg", "png", "webp"]
     )
 else:
-    camera_file = st.camera_input("Ambil foto buah kelapa sawit")
+    if st.session_state.camera_open:
+        if st.button("❌ Tutup Kamera", width="stretch"):
+            st.session_state.camera_open = False
+            st.rerun()
+
+        st.caption("📱 Jika kamera depan terbuka, tekan ikon tukar kamera pada preview untuk memakai kamera belakang.")
+        camera_file = st.camera_input("Ambil foto buah kelapa sawit")
+    else:
+        if st.button("📷 Buka Kamera", width="stretch"):
+            st.session_state.camera_open = True
+            st.rerun()
+
+        st.info("Tekan tombol **Buka Kamera** untuk mengambil foto.")
 
 image_source = uploaded_file if uploaded_file is not None else camera_file
+
 
 if image_source is not None:
     image_pil = Image.open(image_source).convert("RGB")
 
-    st.image(image_pil, caption="Gambar yang diupload", use_column_width=True)
+    if input_mode == "Upload Gambar":
+        st.image(image_pil, caption="Gambar yang diupload", width="stretch")
+    else:
+        st.image(image_pil, caption="Foto yang diambil", width="stretch")
 
     with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
         image_pil.save(temp_file.name)
         temp_path = temp_file.name
 
-    if st.button("Prediksi"):
-        with st.spinner("Model sedang memproses gambar..."):
-            predicted_class, confidence, probabilities = predict_image(model, temp_path)
-
-        st.subheader("Hasil Prediksi")
-
-        label_map = {
-            "belum_masak": "Belum Masak",
-            "masak": "Masak",
-            "terlalu_masak": "Terlalu Masak"
-        }
-
-        display_class = label_map.get(predicted_class, predicted_class)
-
-        st.success(f"Prediksi: **{display_class}**")
-        st.info(f"Confidence: **{confidence:.2f}%**")
-
-        st.subheader("Probabilitas Tiap Kelas")
-
-        for class_name, prob in probabilities.items():
-            display_name = label_map.get(class_name, class_name)
-            st.write(f"{display_name}: {prob:.2f}%")
-            st.progress(int(prob))
+    with st.spinner("Model sedang memproses gambar..."):
+        predicted_class, confidence, probabilities = predict_image(model, temp_path)
 
     try:
         os.remove(temp_path)
     except:
         pass
+
+    st.subheader("Hasil Prediksi")
+
+    label_map = {
+        "belum_masak": "Belum Masak",
+        "masak": "Masak",
+        "terlalu_masak": "Terlalu Masak"
+    }
+
+    display_class = label_map.get(predicted_class, predicted_class)
+
+    if confidence < 50:
+        st.warning(
+            "⚠️ Confidence rendah. Hasil prediksi belum terlalu yakin. "
+            "Coba ambil foto ulang dengan pencahayaan lebih jelas dan buah terlihat lebih dekat."
+        )
+    else:
+        st.success(f"Prediksi: **{display_class}**")
+
+    st.info(f"Confidence: **{confidence:.2f}%**")
+
+    st.subheader("Probabilitas Tiap Kelas")
+
+    for class_name, prob in probabilities.items():
+        display_name = label_map.get(class_name, class_name)
+        st.write(f"{display_name}: {prob:.2f}%")
+        st.progress(int(prob))
+
 else:
     if input_mode == "Upload Gambar":
         st.warning("Silakan upload gambar terlebih dahulu.")
