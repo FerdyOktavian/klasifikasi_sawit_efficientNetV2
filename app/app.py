@@ -89,7 +89,7 @@ image_source = uploaded_file if uploaded_file is not None else camera_file
 if image_source is not None:
     image_pil = Image.open(image_source).convert("RGB")
 
-    st.image(image_pil, caption="Gambar yang diupload", use_container_width=True)
+    st.image(image_pil, caption="Gambar yang diupload", use_column_width=True)
 
     with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
         image_pil.save(temp_file.name)
