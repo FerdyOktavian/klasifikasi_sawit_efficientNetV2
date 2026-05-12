@@ -24,8 +24,8 @@ st.markdown("""
 <style>
 /* Lebarin area utama di HP */
 .block-container {
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
     max-width: 100% !important;
 }
 
@@ -41,41 +41,41 @@ div[data-testid="stButton"] button {
     width: 100% !important;
 }
 
-/* Wrapper utama kamera */
+/* Semua wrapper di dalam kamera dibuat rapi */
 [data-testid="stCameraInput"] > div {
     width: 100% !important;
-    overflow: visible !important;
 }
 
-/* Preview kamera dibuat besar */
+/* Preview kamera dibuat portrait panjang dan sejajar */
 [data-testid="stCameraInput"] video {
     width: 100% !important;
-    height: 620px !important;
-    min-height: 620px !important;
-    max-height: none !important;
+    aspect-ratio: 9 / 16 !important;
+    height: auto !important;
+    min-height: 640px !important;
     object-fit: cover !important;
-    border-radius: 14px 14px 0 0 !important;
+    object-position: center center !important;
     display: block !important;
+    border-radius: 14px !important;
+    margin: 0 auto !important;
 }
 
 /* Setelah foto diambil */
 [data-testid="stCameraInput"] img {
     width: 100% !important;
     height: auto !important;
-    border-radius: 14px 14px 0 0 !important;
+    border-radius: 14px !important;
+    display: block !important;
+    margin: 0 auto !important;
 }
 
-/* Tombol Take Photo bawaan kamera dipaksa muncul */
+/* Tombol Take Photo bawaan kamera */
 [data-testid="stCameraInput"] button {
     width: 100% !important;
     min-height: 58px !important;
     font-size: 20px !important;
     display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    position: relative !important;
-    z-index: 9999 !important;
     margin-top: 10px !important;
+    border-radius: 12px !important;
 }
 
 /* File uploader */
@@ -93,17 +93,14 @@ div[data-testid="stButton"] button {
 /* Khusus layar HP */
 @media (max-width: 768px) {
     [data-testid="stCameraInput"] video {
-        height: 620px !important;
-        min-height: 620px !important;
+        aspect-ratio: 9 / 18 !important;
+        min-height: 8000px !important;
         max-height: none !important;
     }
 
     [data-testid="stCameraInput"] button {
         min-height: 60px !important;
         font-size: 20px !important;
-        position: relative !important;
-        z-index: 9999 !important;
-        margin-top: 12px !important;
     }
 }
 </style>
