@@ -78,7 +78,7 @@ div[data-testid="stButton"] button {
 /* Khusus layar HP */
 @media (max-width: 768px) {
     [data-testid="stCameraInput"] video {
-        height: 620px !important;
+        height: 1080px !important;
     }
 }
 </style>
