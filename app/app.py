@@ -41,21 +41,20 @@ div[data-testid="stButton"] button {
     width: 100% !important;
 }
 
-/* Semua wrapper di dalam kamera dibuat rapi */
+/* Wrapper kamera */
 [data-testid="stCameraInput"] > div {
     width: 100% !important;
 }
 
-/* Preview kamera dibuat portrait panjang dan sejajar */
+/* Preview kamera: BESAR tapi TIDAK ZOOM */
 [data-testid="stCameraInput"] video {
     width: 100% !important;
-    aspect-ratio: 9 / 16 !important;
-    height: auto !important;
-    min-height: 640px !important;
-    object-fit: cover !important;
+    height: 620px !important;
+    object-fit: contain !important;
     object-position: center center !important;
-    display: block !important;
+    background: #000 !important;
     border-radius: 14px !important;
+    display: block !important;
     margin: 0 auto !important;
 }
 
@@ -73,9 +72,7 @@ div[data-testid="stButton"] button {
     width: 100% !important;
     min-height: 58px !important;
     font-size: 20px !important;
-    display: block !important;
     margin-top: 10px !important;
-    border-radius: 12px !important;
 }
 
 /* File uploader */
@@ -93,14 +90,8 @@ div[data-testid="stButton"] button {
 /* Khusus layar HP */
 @media (max-width: 768px) {
     [data-testid="stCameraInput"] video {
-        aspect-ratio: 9 / 18 !important;
-        min-height: 8000px !important;
-        max-height: none !important;
-    }
-
-    [data-testid="stCameraInput"] button {
-        min-height: 60px !important;
-        font-size: 20px !important;
+        height: 700px !important;
+        object-fit: contain !important;
     }
 }
 </style>
