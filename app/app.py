@@ -41,10 +41,33 @@ div[data-testid="stButton"] button {
     width: 100% !important;
 }
 
+/* Wrapper utama kamera */
+[data-testid="stCameraInput"] > div {
+    width: 100% !important;
+}
+
+/* Wrapper preview kamera */
+[data-testid="stCameraInput"] div:has(video) {
+    width: 100% !important;
+    min-height: 620px !important;
+}
+
 /* Preview kamera */
 [data-testid="stCameraInput"] video {
     width: 100% !important;
-    height: 6200px !important;
+    height: 620px !important;
+    min-height: 620px !important;
+    max-height: none !important;
+    object-fit: cover !important;
+    border-radius: 14px 14px 0 0 !important;
+}
+
+/* Canvas preview kamera, kalau browser pakai canvas */
+[data-testid="stCameraInput"] canvas {
+    width: 100% !important;
+    height: 620px !important;
+    min-height: 620px !important;
+    max-height: none !important;
     object-fit: cover !important;
     border-radius: 14px 14px 0 0 !important;
 }
@@ -59,8 +82,8 @@ div[data-testid="stButton"] button {
 /* Tombol Take Photo bawaan kamera */
 [data-testid="stCameraInput"] button {
     width: 100% !important;
-    min-height: 52px !important;
-    font-size: 18px !important;
+    min-height: 58px !important;
+    font-size: 20px !important;
 }
 
 /* File uploader */
@@ -77,8 +100,12 @@ div[data-testid="stButton"] button {
 
 /* Khusus layar HP */
 @media (max-width: 768px) {
-    [data-testid="stCameraInput"] video {
-        height: 1080px !important;
+    [data-testid="stCameraInput"] div:has(video),
+    [data-testid="stCameraInput"] video,
+    [data-testid="stCameraInput"] canvas {
+        height: 70vh !important;
+        min-height: 620px !important;
+        max-height: none !important;
     }
 }
 </style>
