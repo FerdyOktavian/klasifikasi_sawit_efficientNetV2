@@ -44,7 +44,7 @@ div[data-testid="stButton"] button {
 /* Preview kamera */
 [data-testid="stCameraInput"] video {
     width: 100% !important;
-    height: 430px !important;
+    height: 6200px !important;
     object-fit: cover !important;
     border-radius: 14px 14px 0 0 !important;
 }
@@ -78,7 +78,7 @@ div[data-testid="stButton"] button {
 /* Khusus layar HP */
 @media (max-width: 768px) {
     [data-testid="stCameraInput"] video {
-        height: 460px !important;
+        height: 620px !important;
     }
 }
 </style>
