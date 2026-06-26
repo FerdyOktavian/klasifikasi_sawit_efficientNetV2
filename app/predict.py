@@ -23,34 +23,21 @@ def load_sawit_model(model_path=MODEL_PATH):
     return model
 
 
-def predict_image(model, uploaded_file, class_names):
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
-        temp_file.write(uploaded_file.read())
-        temp_path = temp_file.name
+def predict_image(model, img_path, class_names):
+    img = image.load_img(img_path, target_size=(224, 224))
+    img_array = image.img_to_array(img)
+    img_array = np.expand_dims(img_array, axis=0)
+    img_array = preprocess_input(img_array)
 
-    try:
-        img = image.load_img(temp_path, target_size=(224, 224))
-        img_array = image.img_to_array(img)
-        img_array = np.expand_dims(img_array, axis=0)
-        img_array = preprocess_input(img_array)
+    predictions = model.predict(img_array, verbose=0)[0]
 
-        predictions = model.predict(img_array, verbose=0)[0]
+    predicted_index = int(np.argmax(predictions))
+    predicted_class = class_names[predicted_index]
+    confidence = float(predictions[predicted_index]) * 100
 
-        predicted_index = int(np.argmax(predictions))
-        predicted_class = class_names[predicted_index]
-        confidence = float(predictions[predicted_index]) * 100
+    all_probabilities = {
+        class_names[i]: float(predictions[i]) * 100
+        for i in range(len(class_names))
+    }
 
-        probabilities = {
-            class_names[i]: float(predictions[i]) * 100
-            for i in range(len(class_names))
-        }
-
-        return {
-            "predicted_class": predicted_class,
-            "confidence": round(confidence, 2),
-            "probabilities": probabilities,
-        }
-
-    finally:
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
+    return predicted_class, confidence, all_probabilities
