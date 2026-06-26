@@ -4,7 +4,7 @@ import tempfile
 import streamlit as st
 from PIL import Image
 
-from predict import load_sawit_model, predict_image
+from predict import load_sawit_model, load_class_names, predict_image
 
 
 # =========================
@@ -422,7 +422,13 @@ def load_model_cached():
     return load_sawit_model()
 
 
+@st.cache_resource
+def load_class_names_cached():
+    return load_class_names()
+
+
 model = load_model_cached()
+class_names = load_class_names_cached()
 
 
 # =========================
@@ -433,6 +439,23 @@ def safe_rerun():
         st.rerun()
     except AttributeError:
         st.experimental_rerun()
+
+
+def get_uploaded_file_suffix(uploaded_file):
+    filename = getattr(uploaded_file, "name", "") or ""
+    ext = os.path.splitext(filename)[1].lower()
+
+    if ext in [".jpg", ".jpeg", ".png", ".webp"]:
+        return ext
+
+    mime_type = getattr(uploaded_file, "type", "") or ""
+
+    if "png" in mime_type:
+        return ".png"
+    if "webp" in mime_type:
+        return ".webp"
+
+    return ".jpg"
 
 
 # =========================
@@ -558,12 +581,21 @@ if image_source is not None:
         else:
             st.image(image_pil, caption="Foto yang diambil")
 
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
-            image_pil.save(temp_file.name)
+        # Simpan file asli ke temporary file agar proses prediksi tidak mengubah piksel gambar.
+        # Ini penting supaya hasil upload Streamlit lebih konsisten dengan React/FastAPI.
+        suffix = get_uploaded_file_suffix(image_source)
+        image_source.seek(0)
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as temp_file:
+            temp_file.write(image_source.getvalue())
             temp_path = temp_file.name
 
         with st.spinner("🔍 Model sedang memproses gambar..."):
-            predicted_class, confidence, probabilities = predict_image(model, temp_path)
+            predicted_class, confidence, probabilities = predict_image(
+                model,
+                temp_path,
+                class_names
+            )
 
         label_map = {
             "belum_masak": "Belum Masak",
