@@ -8,7 +8,7 @@ from tensorflow.keras.applications.efficientnet_v2 import preprocess_input
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-MODEL_PATH = os.path.join(BASE_DIR, "model_sawit.keras")
+MODEL_PATH = os.path.join(BASE_DIR, "Model_Final.keras")
 CLASS_NAMES_PATH = os.path.join(BASE_DIR, "class_names.txt")
 
 
